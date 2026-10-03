@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>کوک شور سنتور</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E6E1D8; --surface:#F3EFE8; --well:#E9E3D9; --ink:#2B1D14; --muted:#6E5F52;
+  --brass:#94721A; --steel:#66707C; --bridge:#8A6A4F; --good:#2E7A56; --good-soft:rgba(46,122,86,.16);
+  --line:rgba(43,29,20,.16); --sel-bg:#FFFDF8;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1D140F; --surface:#2A1F18; --well:#21180F; --ink:#EEE5D7; --muted:#A8978A;
+    --brass:#D6B145; --steel:#B9C2CB; --bridge:#E3D6BF; --good:#73C796; --good-soft:rgba(115,199,150,.18);
+    --line:rgba(238,229,215,.14); --sel-bg:#3A2C22;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1D140F; --surface:#2A1F18; --well:#21180F; --ink:#EEE5D7; --muted:#A8978A;
+  --brass:#D6B145; --steel:#B9C2CB; --bridge:#E3D6BF; --good:#73C796; --good-soft:rgba(115,199,150,.18);
+  --line:rgba(238,229,215,.14); --sel-bg:#3A2C22;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Vazirmatn",Tahoma,"Segoe UI",system-ui,-apple-system,sans-serif;
+  -webkit-text-size-adjust:100%;line-height:1.6}
+main{max-width:520px;margin:0 auto;padding:16px 16px 40px}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.ltr{direction:ltr;unicode-bidi:isolate}
+
+header{display:flex;align-items:baseline;justify-content:space-between;margin:4px 2px 14px}
+h1{font-size:22px;font-weight:800;margin:0}
+.sub{color:var(--muted);font-size:13px}
+
+.meter{background:var(--surface);border-radius:22px;padding:18px 18px 16px}
+.target-where{color:var(--muted);font-size:14px}
+.target-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.target-note{font-size:34px;font-weight:800;line-height:1.2}
+.target-hz{color:var(--muted);font-size:14px;text-align:left}
+.target-hz b{color:var(--ink);font-weight:600}
+
+.dev-wrap{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:10px}
+.dev{font-size:72px;font-weight:800;line-height:1;transition:color .15s}
+.dev.idle{color:var(--muted);opacity:.45}
+.dev.in{color:var(--good)}
+.dev-unit{color:var(--muted);font-size:15px}
+
+.track{position:relative;height:60px;margin:14px 0 4px;border-radius:14px;background:var(--well);overflow:hidden;direction:ltr}
+.track::before{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(to right,var(--line) 0 1px,transparent 1px 10%)}
+.zone{position:absolute;top:0;bottom:0;left:47%;width:6%;background:var(--good-soft);transition:background .15s}
+.track.in .zone{background:var(--good)}
+.needle{position:absolute;top:7px;bottom:7px;width:4px;border-radius:2px;left:50%;
+  transform:translateX(-50%);background:var(--brass);transition:left 90ms linear,background .15s,opacity .2s}
+.track.in .needle{background:var(--ink)}
+.needle.idle{opacity:.25}
+.scale{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;direction:ltr;padding:0 2px}
+
+.instr{font-size:17px;font-weight:600;margin-top:12px;min-height:3.2em}
+.instr.in{color:var(--good)}
+.heard{color:var(--muted);font-size:13px;margin-top:2px;min-height:1.6em}
+.hint{font-size:13px;color:var(--muted);border-top:1px solid var(--line);margin-top:10px;padding-top:10px}
+
+.start{display:block;width:100%;margin-top:14px;border:0;border-radius:14px;padding:14px;
+  background:var(--brass);color:var(--bg);font-size:17px;font-weight:800}
+.error{margin-top:12px;font-size:14px;color:var(--ink);background:var(--well);border-radius:12px;padding:10px 12px}
+
+.nav{display:flex;gap:10px;margin-top:12px}
+.nav button{flex:1;border:1px solid var(--line);background:var(--surface);border-radius:14px;padding:12px;font-size:15px;font-weight:600}
+
+.board{margin-top:18px;background:var(--surface);border-radius:26px 26px 14px 14px;padding:14px 10px 10px;direction:ltr}
+.row{display:grid;grid-template-columns:1fr 10px 1fr 22px 1fr 10px;align-items:center;column-gap:4px;margin-bottom:5px}
+.heads{color:var(--muted);font-size:12px;text-align:center;direction:rtl}
+.heads span:nth-child(1){grid-column:1}
+.heads span:nth-child(2){grid-column:3}
+.heads span:nth-child(3){grid-column:5}
+.cell{position:relative;height:42px;border-radius:10px;border:2px solid transparent;background:var(--well);
+  font-size:13px;font-weight:600;direction:rtl;padding:0 4px;white-space:nowrap;overflow:hidden}
+.cell::after{content:"";position:absolute;left:8px;right:8px;bottom:6px;height:2px;border-radius:1px;opacity:.75}
+.cell.w::after,.cell.b::after{background:var(--steel)}
+.cell.y::after{background:var(--brass)}
+.cell.sel{border-color:var(--brass);background:var(--sel-bg)}
+.cell.done::before{content:"✓";position:absolute;top:1px;right:6px;font-size:11px;color:var(--good)}
+.brg{width:10px;height:15px;background:var(--bridge);clip-path:polygon(50% 0,100% 100%,0 100%);justify-self:center}
+.num{color:var(--muted);font-size:12px;text-align:center}
+.near{text-align:center;color:var(--muted);font-size:12px;margin-top:6px;direction:rtl}
+
+details{margin-top:18px;background:var(--surface);border-radius:18px;padding:4px 16px}
+summary{font-weight:600;padding:12px 0;cursor:pointer}
+.field{padding:10px 0;border-top:1px solid var(--line)}
+.field label{display:block;font-size:14px;margin-bottom:6px}
+.field small{display:block;color:var(--muted);font-size:12px;margin-top:4px}
+.field input[type=number]{width:110px;font:inherit;padding:6px 10px;border-radius:10px;border:1px solid var(--line);background:var(--well);color:var(--ink);direction:ltr}
+.field input[type=range]{width:100%;accent-color:var(--brass)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:8px 16px;font-size:14px}
+.seg button[aria-pressed="true"]{background:var(--brass);color:var(--bg);font-weight:600}
+.plain{border:1px solid var(--line);background:var(--well);border-radius:12px;padding:8px 14px;font-size:14px}
+
+.tips{margin-top:18px;color:var(--muted);font-size:13px;padding:0 4px}
+.tips p{margin:0 0 6px}
+
+@media (prefers-reduced-motion: reduce){
+  .needle,.dev,.zone{transition:none}
+}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>کوک شور</h1>
+    <span class="sub">سنتور ۹ خرک سل‌کوک</span>
+  </header>
+
+  <section class="meter" aria-live="polite">
+    <div class="target-where" id="where">خرک ۱، سفید</div>
+    <div class="target-row">
+      <div class="target-note" id="tNote">می کرن</div>
+      <div class="target-hz">هدف <b class="ltr" id="tHz">۳۱۸٫۴</b> هرتز<br><span class="ltr" id="tWest">E♭4 +40</span></div>
+    </div>
+
+    <div class="dev-wrap">
+      <span class="dev idle ltr" id="dev">۰</span>
+      <span class="dev-unit">سِنت</span>
+    </div>
+
+    <div class="track" id="track" aria-hidden="true">
+      <div class="zone"></div>
+      <div class="needle idle" id="needle"></div>
+    </div>
+    <div class="scale"><span>♭ −50</span><span>0</span><span>+50 ♯</span></div>
+
+    <div class="instr" id="instr">برای شروع، «شروع شنیدن» را بزنید.</div>
+    <div class="heard" id="heard"></div>
+    <div class="hint" id="hint" hidden>سیم پشت خرک با گوشی کوک نمی‌شود. با جابه‌جا کردن خرک تنظیم می‌شود و بعد از آن باید سفید همین خرک را دوباره کوک کنید.</div>
+
+    <button class="start" id="start">شروع شنیدن</button>
+    <div class="error" id="err" hidden></div>
+  </section>
+
+  <div class="nav">
+    <button id="prev">سیم قبلی</button>
+    <button id="next">سیم بعدی</button>
+  </div>
+
+  <section class="board" id="board" aria-label="نقشه خرک‌ها"></section>
+
+  <details>
+    <summary>تنظیمات</summary>
+    <div class="field">
+      <label for="ref">فرکانس مرجع لا (A4)</label>
+      <input type="number" id="ref" min="420" max="460" step="0.5" inputmode="decimal">
+      <small>استاندارد ۴۴۰ است. فقط اگر عمداً کل ساز را بالاتر یا پایین‌تر کوک می‌کنید تغییر دهید.</small>
+    </div>
+    <div class="field">
+      <label for="kor">مقدار کرن: <span class="ltr" id="korOut">40</span> سِنت بالاتر از بمل</label>
+      <input type="range" id="kor" min="20" max="60" step="1">
+      <small>اگر کرن‌ها به گوشتان تیز آمد، کمتر کنید. اگر حال شور نداشت، بیشتر.</small>
+    </div>
+    <div class="field">
+      <label>ر خرک ۷ زرد</label>
+      <div class="seg" role="group" aria-label="ر خرک ۷ زرد">
+        <button id="y7k" aria-pressed="true">کرن</button>
+        <button id="y7n" aria-pressed="false">بکار</button>
+      </div>
+      <small>برای ابوعطا، بیات ترک و بیات کرد «بکار» را انتخاب کنید.</small>
+    </div>
+    <div class="field">
+      <button class="plain" id="clear">پاک کردن تیک‌ها</button>
+    </div>
+  </details>
+
+  <div class="tips">
+    <p>هر بار فقط یک سیم را بزنید و سیم‌های دیگر همان خرک را با انگشت ساکت کنید.</p>
+    <p>ترتیب پیشنهادی: اول همه سفیدها، بعد زردها، در آخر پشت خرک. بعد یک دور دیگر از اول، چون با سفت شدن سیم‌ها کوک قبلی‌ها کمی جابه‌جا می‌شود.</p>
+    <p>آچار را آرام بچرخانید. سیم‌هایی که مدت‌ها کوک نشده‌اند با کشش ناگهانی ممکن است پاره شوند.</p>
+  </div>
+</main>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const fa = (x, d) => Number(x).toLocaleString('fa-IR', {minimumFractionDigits:d||0, maximumFractionDigits:d||0, useGrouping:false});
+  const NOTES = ['C','D♭','D','E♭','E','F','G♭','G','A♭','A','B♭','B'];
+  const ROWNAME = {white:'سفید', yellow:'زرد', behind:'پشت خرک'};
+
+  // ---------- settings ----------
+  const KEY = 'santur-shur-v1';
+  let S = {ref:440, koron:40, y7koron:true};
+  try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(S, JSON.parse(raw)); } catch(e){}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+
+  // ---------- tuning spec ----------
+  const NAMES = ['می کرن','فا','سل','لا کرن','سی بمل','دو','ر','می بمل','فا'];
+  const BASE  = [63,65,67,68,70,72,74,75,77];   // white row, midi of written note (flat before koron)
+  const KORON = [1,0,0,1,0,0,0,0,0];
+
+  function spec(row, b){
+    let midi = BASE[b-1], kor = KORON[b-1], name = NAMES[b-1];
+    if (row === 'yellow'){
+      midi -= 12;
+      if (b === 7 && S.y7koron){ midi = 61; kor = 1; name = 'ر کرن'; }
+    }
+    if (row === 'behind'){
+      midi += 12;
+      if (b === 4){ kor = 0; name = 'لا بمل'; }
+    }
+    const cents = kor ? S.koron : 0;
+    const f = S.ref * Math.pow(2, (midi - 69)/12 + cents/1200);
+    const west = NOTES[midi % 12] + (Math.floor(midi/12) - 1) + (kor ? ' +' + S.koron : '');
+    return {name, f, west};
+  }
+
+  const ORDER = [];
+  ['white','yellow','behind'].forEach(r => { for (let b=1; b<=9; b++) ORDER.push({row:r, b}); });
+  let idx = 0;
+  const done = new Set();
+  const keyOf = (r,b) => r + b;
+
+  // ---------- board ----------
+  const board = $('#board');
+  function renderBoard(){
+    let h = '<div class="row heads"><span>پشت خرک</span><span>سفید</span><span>زرد</span></div>';
+    for (let b=9; b>=1; b--){
+      const inset = (b-1)*3;
+      h += `<div class="row" style="padding-inline:${inset}px">` +
+        cell('behind', b, 'b') + '<div class="brg"></div>' +
+        cell('white', b, 'w') + `<div class="num">${fa(b)}</div>` +
+        cell('yellow', b, 'y') + '<div class="brg"></div></div>';
+    }
+    h += '<div class="near">سمت شما (نوازنده)</div>';
+    board.innerHTML = h;
+  }
+  function cell(row, b, cls){
+    const cur = ORDER[idx];
+    const sel = cur.row === row && cur.b === b ? ' sel' : '';
+    const dn = done.has(keyOf(row,b)) ? ' done' : '';
+    return `<button class="cell ${cls}${sel}${dn}" data-row="${row}" data-b="${b}" aria-label="خرک ${b} ${ROWNAME[row]}">${spec(row,b).name}</button>`;
+  }
+  board.addEventListener('click', e => {
+    const t = e.target.closest('.cell'); if (!t) return;
+    const r = t.dataset.row, b = +t.dataset.b;
+    idx = ORDER.findIndex(o => o.row === r && o.b === b);
+    select();
+  });
+
+  // ---------- target display ----------
+  let target = null;
+  function select(){
+    const cur = ORDER[idx];
+    target = spec(cur.row, cur.b);
+    $('#where').textContent = `خرک ${fa(cur.b)}، ${ROWNAME[cur.row]}`;
+    $('#tNote').textContent = target.name;
+    $('#tHz').textContent = fa(target.f, 1);
+    $('#tWest').textContent = target.west;
+    $('#hint').hidden = cur.row !== 'behind';
+    hist = []; inSince = 0;
+    renderBoard();
+    if (!running) return;
+    setIdle(`سیم «${target.name}» خرک ${fa(cur.b)} ${ROWNAME[cur.row]} را بزنید.`);
+  }
+  $('#prev').onclick = () => { idx = (idx + ORDER.length - 1) % ORDER.length; select(); };
+  $('#next').onclick = () => { idx = (idx + 1) % ORDER.length; select(); };
+
+  // ---------- settings UI ----------
+  const refIn = $('#ref'), korIn = $('#kor');
+  refIn.value = S.ref; korIn.value = S.koron; $('#korOut').textContent = S.koron;
+  function syncSeg(){ $('#y7k').setAttribute('aria-pressed', S.y7koron); $('#y7n').setAttribute('aria-pressed', !S.y7koron); }
+  syncSeg();
+  refIn.addEventListener('change', () => {
+    const v = parseFloat(refIn.value);
+    if (v >= 420 && v <= 460){ S.ref = v; save(); select(); } else refIn.value = S.ref;
+  });
+  korIn.addEventListener('input', () => { S.koron = +korIn.value; $('#korOut').textContent = S.koron; save(); select(); });
+  $('#y7k').onclick = () => { S.y7koron = true; syncSeg(); save(); select(); };
+  $('#y7n').onclick = () => { S.y7koron = false; syncSeg(); save(); select(); };
+  $('#clear').onclick = () => { done.clear(); renderBoard(); };
+
+  // ---------- pitch detection (YIN, constrained around target) ----------
+  function yin(buf, sr, fMin, fMax){
+    const tauMin = Math.max(2, Math.floor(sr / fMax));
+    const tauMax = Math.min(Math.ceil(sr / fMin), Math.floor(buf.length/2) - 2);
+    const W = Math.min(1024, buf.length - tauMax - 2);
+    const d = new Float32Array(tauMax + 2);
+    for (let tau = 1; tau <= tauMax + 1; tau++){
+      let s = 0;
+      for (let i = 0; i < W; i++){ const x = buf[i] - buf[i + tau]; s += x * x; }
+      d[tau] = s;
+    }
+    const cm = new Float32Array(tauMax + 2); cm[0] = 1;
+    let run = 0;
+    for (let tau = 1; tau <= tauMax + 1; tau++){ run += d[tau]; cm[tau] = run > 0 ? d[tau] * tau / run : 1; }
+    let best = -1;
+    for (let tau = tauMin; tau <= tauMax; tau++){
+      if (cm[tau] < 0.15){
+        while (tau + 1 <= tauMax && cm[tau + 1] < cm[tau]) tau++;
+        best = tau; break;
+      }
+    }
+    if (best < 0){
+      let m = 1;
+      for (let tau = tauMin; tau <= tauMax; tau++) if (cm[tau] < m){ m = cm[tau]; best = tau; }
+      if (best < 0 || m > 0.35) return null;
+    }
+    let t = best;
+    const a = cm[best-1], bb = cm[best], c = cm[best+1];
+    const den = a - 2*bb + c;
+    if (den !== 0 && isFinite(den)) t = best + 0.5 * (a - c) / den;
+    return sr / t;
+  }
+
+  // ---------- audio ----------
+  let ctx, analyser, buf, running = false, hist = [], inSince = 0, lastHeard = 0, wake = null;
+
+  async function start(){
+    $('#err').hidden = true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      return showErr('این صفحه به میکروفون دسترسی ندارد. صفحه را مستقیم در Safari باز کنید (آدرس باید با https شروع شود).');
+    }
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false, noiseSuppression:false, autoGainControl:false}});
+    } catch(e){
+      if (e && e.name === 'NotAllowedError')
+        return showErr('اجازه میکروفون داده نشد. اگر Safari پرسید «Allow» را بزنید. اگر صفحه داخل اپ Claude باز است و اجازه نمی‌دهد، فایل را روی سایت خودتان باز کنید.');
+      return showErr('میکروفون پیدا نشد یا در حال استفاده توسط اپ دیگری است.');
+    }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    try { await ctx.resume(); } catch(e){}
+    const src = ctx.createMediaStreamSource(stream);
+    analyser = ctx.createAnalyser();
+    analyser.fftSize = 4096;
+    const mute = ctx.createGain(); mute.gain.value = 0;
+    src.connect(analyser); analyser.connect(mute); mute.connect(ctx.destination);
+    buf = new Float32Array(analyser.fftSize);
+    running = true;
+    $('#start').hidden = true;
+    requestWake();
+    select();
+    loop();
+  }
+  function showErr(m){ const el = $('#err'); el.textContent = m; el.hidden = false; }
+  $('#start').onclick = start;
+
+  async function requestWake(){
+    try { if ('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); } catch(e){}
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && running){
+      try { ctx.resume(); } catch(e){}
+      requestWake();
+    }
+  });
+
+  const dev = $('#dev'), needle = $('#needle'), track = $('#track'), instr = $('#instr'), heard = $('#heard');
+
+  function setIdle(msg){
+    dev.className = 'dev idle ltr';
+    needle.classList.add('idle');
+    track.classList.remove('in');
+    instr.className = 'instr';
+    if (msg) instr.textContent = msg;
+  }
+
+  function median(a){ const s = a.slice().sort((x,y)=>x-y); return s[Math.floor(s.length/2)]; }
+
+  function loop(){
+    if (!running) return;
+    requestAnimationFrame(loop);
+    analyser.getFloatTimeDomainData(buf);
+    let rms = 0;
+    for (let i = 0; i < 1024; i++) rms += buf[i]*buf[i];
+    rms = Math.sqrt(rms / 1024);
+    const now = performance.now();
+    let f = null;
+    if (rms > 0.003) f = yin(buf, ctx.sampleRate, target.f / 1.45, target.f * 1.45);
+
+    if (f){
+      const c = 1200 * Math.log2(f / target.f);
+      hist.push({c, t:now});
+      lastHeard = now;
+      hist = hist.filter(h => now - h.t < 350).slice(-7);
+      const cm = median(hist.map(h => h.c));
+      show(cm, f, now);
+    } else if (now - lastHeard > 1200){
+      if (!dev.classList.contains('idle')){
+        hist = []; inSince = 0;
+        const cur = ORDER[idx];
+        setIdle(`سیم «${target.name}» خرک ${fa(cur.b)} ${ROWNAME[cur.row]} را بزنید.`);
+      }
+    }
+  }
+
+  function show(c, f, now){
+    const cur = ORDER[idx];
+    const ac = Math.abs(c);
+    const inTune = ac <= 3;
+    const r = Math.round(c);
+    dev.textContent = (r > 0 ? '+' : r < 0 ? '−' : '') + fa(Math.abs(r));
+    dev.className = 'dev ltr' + (inTune ? ' in' : '');
+    needle.classList.remove('idle');
+    const p = Math.max(-50, Math.min(50, c));
+    needle.style.left = (50 + p) + '%';
+    track.classList.toggle('in', inTune);
+
+    // heard note (like a normal tuner)
+    const mf = 69 + 12 * Math.log2(f / S.ref);
+    const n = Math.round(mf), nc = Math.round((mf - n) * 100);
+    heard.innerHTML = `شنیده‌شده: <span class="ltr">${fa(f,1)}</span> هرتز، <span class="ltr">${NOTES[((n%12)+12)%12]}${Math.floor(n/12)-1} ${nc>=0?'+':''}${nc}</span>`;
+
+    let msg;
+    if (inTune){
+      msg = 'کوک است.';
+      if (!inSince) inSince = now;
+      if (now - inSince > 700 && !done.has(keyOf(cur.row, cur.b))){
+        done.add(keyOf(cur.row, cur.b)); renderBoard();
+      }
+    } else {
+      inSince = 0;
+      const far = ac > 45 ? ' خیلی فاصله دارد، آرام و پیوسته بچرخانید.' : '';
+      if (cur.row === 'behind'){
+        msg = c > 0
+          ? 'بالاست. خرک را کمی به سمت وسط ساز ببرید، بعد سفید همین خرک را دوباره کوک کنید.'
+          : 'پایین است. خرک را کمی به سمت لبه چپ ساز ببرید، بعد سفید همین خرک را دوباره کوک کنید.';
+      } else {
+        msg = (c < 0 ? 'پایین است، سفت کنید.' : 'بالاست، شل کنید.') + far;
+      }
+    }
+    instr.textContent = msg;
+    instr.className = 'instr' + (inTune ? ' in' : '');
+  }
+
+  select();
+})();
+</script>
+</body>
+</html>
